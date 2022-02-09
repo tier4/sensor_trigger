@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>jetson_camera_trigger</name>
+  <version>0.1.0</version>
+  <description>The jetson_camera_trigger package</description>
+  <maintainer email="david.wong@tier4.jp">drwnz</maintainer>
+  <license>Apache 2</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>std_msgs</depend>
+</package>

@@ -1,0 +1,13 @@
+<launch>
+  <arg name="frame_id" default="camera0"/>
+  <arg name="namespace" default="$(arg frame_id)"/>
+  <arg name="gpio" default="51"/>
+  <arg name="phase" default="0"/>
+  <arg name="frame_rate" default="10"/>
+
+  <node pkg="jetson_camera_trigger" type="jetson_camera_trigger" name="jetson_camera_trigger" ns="$(arg namespace)">
+    <param name="gpio" value="$(arg gpio)"/>
+    <param name="phase" value="$(arg phase)"/>
+    <param name="frame_rate" value="$(arg frame_rate)"/>
+  </node>
+</launch>
