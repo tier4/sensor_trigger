@@ -1,0 +1,14 @@
+<launch>
+  <arg name="frame_id" default="camera0"/>
+  <arg name="namespace" default="$(var frame_id)"/>
+  <arg name="gpio_pin" default="51"/>
+  <arg name="phase_degree" default="0.0"/>
+  <arg name="frame_rate" default="10.0"/>
+
+  <push-ros-namespace namespace="$(var namespace)"/>
+  <node pkg="jetson_camera_trigger" exec="jetson_camera_trigger_exe" name="jetson_camera_trigger">
+    <param name="gpio_pin" value="$(var gpio_pin)"/>
+    <param name="phase_degree" value="$(var phase_degree)"/>
+    <param name="frame_rate" value="$(var frame_rate)"/>
+  </node>
+</launch>
