@@ -23,12 +23,9 @@ JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions& node_options
   : Node("jetson_camera_trigger", node_options)
 {
   // Get the triggering parameters
-  declare_parameter("frame_rate", double(10));
-  get_parameter("frame_rate", fps_);
-  declare_parameter("phase", double(0));
-  get_parameter("phase", phase_);
-  declare_parameter("gpio", 0);
-  get_parameter("gpio", gpio_);
+  fps_ = declare_parameter("frame_rate", 10.0);
+  phase_ = declare_parameter("phase", 0.0);
+  gpio_ = declare_parameter("gpio", 0);
 
   if (gpio_ <= 0)
   {
