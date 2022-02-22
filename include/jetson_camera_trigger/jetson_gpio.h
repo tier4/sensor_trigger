@@ -30,7 +30,7 @@ typedef int gpio_direction;
 typedef int gpio_state;
 
 // Mapping of GPIO number to pin number for ROSCubeX
-static std::map<int, int> pin_gpio_mapping{ { 51, 408 }, { 52, 350 }, { 53, 446 }, { 54, 445 } };
+static std::map<int, int> pin_gpio_mapping{{51, 408}, {52, 350}, {53, 446}, {54, 445}};
 
 int export_gpio(int gpio);
 int unexport_gpio(int gpio);

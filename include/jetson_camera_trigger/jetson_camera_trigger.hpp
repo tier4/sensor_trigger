@@ -17,18 +17,18 @@
 #ifndef __JETSON_CAMERA_TRIGGER_HPP
 #define __JETSON_CAMERA_TRIGGER_HPP
 
+#include <builtin_interfaces/msg/time.hpp>
+#include <rclcpp/rclcpp.hpp>
+
 #include <string>
 #include <vector>
-
-#include <rclcpp/rclcpp.hpp>
-#include <builtin_interfaces/msg/time.hpp>
 
 namespace jetson_camera_trigger
 {
 class JetsonCameraTrigger : public rclcpp::Node
 {
 public:
-  explicit JetsonCameraTrigger(const rclcpp::NodeOptions& node_options);
+  explicit JetsonCameraTrigger(const rclcpp::NodeOptions & node_options);
 
 private:
   // ros::NodeHandle nh_{ "" };
