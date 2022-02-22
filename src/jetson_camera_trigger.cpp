@@ -13,7 +13,6 @@
 // limitations under the License.
 
 #include <jetson_camera_trigger/jetson_camera_trigger.hpp>
-
 #include <jetson_camera_trigger/jetson_gpio.hpp>
 
 namespace jetson_camera_trigger

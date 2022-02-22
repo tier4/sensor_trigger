@@ -12,8 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <fcntl.h>
 #include <jetson_camera_trigger/jetson_gpio.hpp>
+
+#include <fcntl.h>
 #include <unistd.h>
 
 int export_gpio(int gpio)
