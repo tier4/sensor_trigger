@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef __JETSON_CAMERA_TRIGGER_HPP
-#define __JETSON_CAMERA_TRIGGER_HPP
+#ifndef JETSON_CAMERA_TRIGGER__JETSON_CAMERA_TRIGGER_HPP_
+#define JETSON_CAMERA_TRIGGER__JETSON_CAMERA_TRIGGER_HPP_
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -44,4 +44,4 @@ private:
 };
 }  // namespace jetson_camera_trigger
 
-#endif  // JETSON_CAMERA_TRIGGER_HPP
+#endif  // JETSON_CAMERA_TRIGGER__JETSON_CAMERA_TRIGGER_HPP_
