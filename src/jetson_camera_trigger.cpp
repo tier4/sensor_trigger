@@ -31,18 +31,27 @@ JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions & node_option
       "No valid trigger GPIO specified. Not using triggering on GPIO " << gpio_ << ".");
     use_triggering_ = false;
   } else {
-    InitializeTrigger();
+    initializeTrigger();
   }
   if (use_triggering_) {
     trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
-    Run();
+    trigger_thread_ = std::make_unique<std::thread>(&JetsonCameraTrigger::run, this);
   } else {
     rclcpp::shutdown();
     return;
   }
 }
 
-void JetsonCameraTrigger::InitializeTrigger()
+JetsonCameraTrigger::~JetsonCameraTrigger()
+{
+  if (trigger_thread_) {
+    if (trigger_thread_->joinable()) {
+      trigger_thread_->join();
+    }
+  }
+}
+
+void JetsonCameraTrigger::initializeTrigger()
 {
   if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
     RCLCPP_WARN_STREAM(
@@ -52,7 +61,7 @@ void JetsonCameraTrigger::InitializeTrigger()
   }
 }
 
-void JetsonCameraTrigger::Run()
+void JetsonCameraTrigger::run()
 {
   if (use_triggering_) {
     builtin_interfaces::msg::Time trigger_time_msg;

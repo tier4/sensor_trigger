@@ -18,6 +18,7 @@
 #include <builtin_interfaces/msg/time.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -27,6 +28,7 @@ class JetsonCameraTrigger : public rclcpp::Node
 {
 public:
   explicit JetsonCameraTrigger(const rclcpp::NodeOptions & node_options);
+  ~JetsonCameraTrigger();
 
 private:
   // ros::NodeHandle nh_{ "" };
@@ -39,8 +41,11 @@ private:
   int gpio_;
   bool use_triggering_;
 
-  void InitializeTrigger();
-  void Run();
+  // Trigger thread
+  std::unique_ptr<std::thread> trigger_thread_;
+
+  void initializeTrigger();
+  void run();
 };
 }  // namespace jetson_camera_trigger
 
