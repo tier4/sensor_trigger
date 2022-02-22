@@ -1,51 +1,42 @@
-/*
- * Copyright 2022 TierIV. All rights reserved.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+// Copyright 2022 Tier IV, Inc.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
-#include <jetson_camera_trigger/jetson_gpio.h>
 #include <jetson_camera_trigger/jetson_camera_trigger.hpp>
+#include <jetson_camera_trigger/jetson_gpio.hpp>
 
 namespace jetson_camera_trigger
 {
-JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions& node_options)
-  : Node("jetson_camera_trigger", node_options)
+JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions & node_options)
+: Node("jetson_camera_trigger", node_options)
 {
   // Get the triggering parameters
-  declare_parameter("frame_rate", double(10));
-  get_parameter("frame_rate", fps_);
-  declare_parameter("phase", double(0));
-  get_parameter("phase", phase_);
-  declare_parameter("gpio", 0);
-  get_parameter("gpio", gpio_);
+  fps_ = declare_parameter("frame_rate", 10.0);
+  phase_ = declare_parameter("phase", 0.0);
+  gpio_ = declare_parameter("gpio", 0);
 
-  if (gpio_ <= 0)
-  {
-    RCLCPP_WARN_STREAM(get_logger(), "No valid trigger GPIO specified. Not using triggering on GPIO " << gpio_ << ".");
+  if (gpio_ <= 0) {
+    RCLCPP_WARN_STREAM(
+      get_logger(),
+      "No valid trigger GPIO specified. Not using triggering on GPIO " << gpio_ << ".");
     use_triggering_ = false;
-  }
-  else
-  {
+  } else {
     InitializeTrigger();
   }
-  if (use_triggering_)
-  {
+  if (use_triggering_) {
     trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
     Run();
-  }
-  else
-  {
+  } else {
     rclcpp::shutdown();
     return;
   }
@@ -53,18 +44,17 @@ JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions& node_options
 
 void JetsonCameraTrigger::InitializeTrigger()
 {
-  if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT))
-  {
-    RCLCPP_WARN_STREAM(get_logger(),
-                       "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
+  if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
+    RCLCPP_WARN_STREAM(
+      get_logger(),
+      "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
     use_triggering_ = false;
   }
 }
 
 void JetsonCameraTrigger::Run()
 {
-  if (use_triggering_)
-  {
+  if (use_triggering_) {
     builtin_interfaces::msg::Time trigger_time_msg;
 
     // Start on the first time after TOS
@@ -76,65 +66,50 @@ void JetsonCameraTrigger::Run()
     int64_t wait_nsec = 0;
     int64_t now_nsec = 0;
     // Fix this later to remove magic numbers
-    if (std::abs(phase_) <= 1e-7)
-    {
+    if (std::abs(phase_) <= 1e-7) {
       start_nsec = 0;
-    }
-    else
-    {
+    } else {
       start_nsec = interval_nsec * (int64_t)(phase_ * 10) / 3600;
     }
     target_nsec = start_nsec;
     end_nsec = start_nsec - interval_nsec + 1e9;
 
-    while (rclcpp::ok())
-    {
+    while (rclcpp::ok()) {
       // Do triggering stuff
       // Check current time - assume ROS uses best clock source
-      do
-      {
-        now_nsec = rclcpp::Clock{ RCL_SYSTEM_TIME }.now().nanoseconds() % (uint64_t)1e9;
-        if (now_nsec < end_nsec)
-        {
-          while (now_nsec > target_nsec)
-          {
+      do {
+        now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
+        if (now_nsec < end_nsec) {
+          while (now_nsec > target_nsec) {
             target_nsec = target_nsec + interval_nsec;
           }
           // FIX: what about very small phases and fast framerates giving a negative number?
           wait_nsec = target_nsec - now_nsec - 1e7;
-        }
-        else
-        {
+        } else {
           target_nsec = start_nsec;
           wait_nsec = 1e9 - now_nsec + start_nsec - 1e7;
         }
         // Keep waiting for half the remaining time until the last millisecond.
         // This is required as sleep_for tends to oversleep significantly
-        if (wait_nsec > 1e7)
-        {
+        if (wait_nsec > 1e7) {
           rclcpp::sleep_for(std::chrono::nanoseconds(wait_nsec / 2));
         }
       } while (wait_nsec > 1e7);
       // Block the last millisecond
-      now_nsec = rclcpp::Clock{ RCL_SYSTEM_TIME }.now().nanoseconds() % (uint64_t)1e9;
-      if (now_nsec < end_nsec)
-      {
-        while (now_nsec < target_nsec)
-        {
-          now_nsec = rclcpp::Clock{ RCL_SYSTEM_TIME }.now().nanoseconds() % (uint64_t)1e9;
+      now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
+      if (now_nsec < end_nsec) {
+        while (now_nsec < target_nsec) {
+          now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
         }
-      }
-      else
-      {
-        while (now_nsec > end_nsec || now_nsec < start_nsec)
-        {
-          now_nsec = rclcpp::Clock{ RCL_SYSTEM_TIME }.now().nanoseconds() % (uint64_t)1e9;
+      } else {
+        while (now_nsec > end_nsec || now_nsec < start_nsec) {
+          now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
         }
       }
       // Trigger!
       set_gpio_pin_state(gpio_, GPIO_HIGH);
       rclcpp::sleep_for(std::chrono::nanoseconds(pulse_width));
-      rclcpp::Time now = rclcpp::Clock{ RCL_SYSTEM_TIME }.now();
+      rclcpp::Time now = rclcpp::Clock{RCL_SYSTEM_TIME}.now();
       int64_t now_sec = now.nanoseconds() / 1e9;
       trigger_time_msg.sec = (int32_t)now_sec;
       trigger_time_msg.nanosec = (uint32_t)now_nsec;
