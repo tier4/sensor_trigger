@@ -15,7 +15,7 @@
  */
 
 #include <fcntl.h>
-#include <jetson_camera_trigger/jetson_gpio.h>
+#include <jetson_camera_trigger/jetson_gpio.hpp>
 #include <unistd.h>
 
 int export_gpio(int gpio)
