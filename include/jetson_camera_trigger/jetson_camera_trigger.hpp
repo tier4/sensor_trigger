@@ -39,12 +39,10 @@ private:
   double fps_;
   double phase_;
   int gpio_;
-  bool use_triggering_;
 
   // Trigger thread
   std::unique_ptr<std::thread> trigger_thread_;
 
-  void initializeTrigger();
   void run();
 };
 }  // namespace jetson_camera_trigger

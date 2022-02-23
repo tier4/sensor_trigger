@@ -17,6 +17,8 @@
 #include <fcntl.h>
 #include <unistd.h>
 
+#include <cstdio>
+
 int export_gpio(int gpio)
 {
   int file_descriptor, buffer_length;
