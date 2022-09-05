@@ -2,9 +2,11 @@ name: build-and-test
 
 on:
   push:
-    - galactic
+    branches:
+      - galactic
   pull_request:
-    - galactic
+    branches:
+      - galactic
 
 jobs:
   build-and-test:
@@ -34,7 +36,7 @@ jobs:
         with:
           path: ros_ws/src
       - name: build and test
-        uses: ros-tooling/action-ros-ci@0.2
+        uses: ros-tooling/action-ros-ci@v0.2
         with:
           package-name: jetson_camera_trigger
           target-ros2-distro: ${{ matrix.ros_distribution }}
