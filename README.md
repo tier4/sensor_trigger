@@ -1,3 +1,3 @@
-# jetson\_camera\_trigger
+# jetson_camera_trigger
 
 ROS node for triggering cameras using GPIO on Jetson
