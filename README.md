@@ -1,3 +1,3 @@
-# ros2-project-template
+# jetson_camera_trigger
 
-Project template for ROS2
+ROS node for triggering cameras using GPIO on Jetson
