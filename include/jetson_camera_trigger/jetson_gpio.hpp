@@ -28,7 +28,8 @@ typedef int gpio_direction;
 typedef int gpio_state;
 
 // Mapping of GPIO number to pin number for ROSCubeX
-// Note: pin 5->216 is pin 5 on the DB50 connector, run by GPIO chip 216 (starting at GPIO number 216)
+// Note: pin 5->216 is pin 5 on the DB50 connector, run by GPIO chip 216 (starting at GPIO number
+// 216)
 static std::map<int, int> pin_gpio_mapping{{5, 216}, {51, 408}, {52, 350}, {53, 446}, {54, 445}};
 
 int export_gpio(int gpio);
