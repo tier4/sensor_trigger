@@ -40,6 +40,14 @@ JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions & node_option
     rclcpp::shutdown();
     return;
   }
+  
+  if (fps_ < 1.0) {
+    RCLCPP_WARN_STREAM(
+      get_logger(),
+      "Unable to trigger slower than 1 fps. Not triggering on GPIO " << gpio_ << ".");
+    rclcpp::shutdown();
+    return;
+  }
 
   trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
   trigger_thread_ = std::make_unique<std::thread>(&JetsonCameraTrigger::run, this);
@@ -74,6 +82,9 @@ void JetsonCameraTrigger::run()
   }
   target_nsec = start_nsec;
   end_nsec = start_nsec - interval_nsec + 1e9;
+  if (end_nsec == 0) {
+    end_nsec = 1e9 - 1;
+  }
 
   while (rclcpp::ok()) {
     // Do triggering stuff
