@@ -40,11 +40,10 @@ JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions & node_option
     rclcpp::shutdown();
     return;
   }
-  
+
   if (fps_ < 1.0) {
     RCLCPP_WARN_STREAM(
-      get_logger(),
-      "Unable to trigger slower than 1 fps. Not triggering on GPIO " << gpio_ << ".");
+      get_logger(), "Unable to trigger slower than 1 fps. Not triggering on GPIO " << gpio_ << ".");
     rclcpp::shutdown();
     return;
   }
@@ -82,9 +81,6 @@ void JetsonCameraTrigger::run()
   }
   target_nsec = start_nsec;
   end_nsec = start_nsec - interval_nsec + 1e9;
-  if (end_nsec == 0) {
-    end_nsec = 1e9 - 1;
-  }
 
   while (rclcpp::ok()) {
     // Do triggering stuff
@@ -109,7 +105,11 @@ void JetsonCameraTrigger::run()
     } while (wait_nsec > 1e7);
     // Block the last millisecond
     now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
-    if (now_nsec < end_nsec) {
+    if (start_nsec == end_nsec) {
+      while (now_nsec > 1e7) {
+        now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
+      }
+    } else if (now_nsec < end_nsec) {
       while (now_nsec < target_nsec) {
         now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
       }
