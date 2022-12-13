@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <sensor_trigger/sensor_trigger.hpp>
 #include <sensor_trigger/jetson_gpio.hpp>
+#include <sensor_trigger/sensor_trigger.hpp>
 
 namespace sensor_trigger
 {
