@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include <jetson_camera_trigger/jetson_camera_trigger.hpp>
-#include <jetson_camera_trigger/jetson_gpio.hpp>
+#include <sensor_trigger/sensor_trigger.hpp>
+#include <sensor_trigger/jetson_gpio.hpp>
 
-namespace jetson_camera_trigger
+namespace sensor_trigger
 {
-JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions & node_options)
-: Node("jetson_camera_trigger", node_options)
+SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
+: Node("sensor_trigger", node_options)
 {
   // Get the triggering parameters
   fps_ = declare_parameter("frame_rate", 10.0);
@@ -49,10 +49,10 @@ JetsonCameraTrigger::JetsonCameraTrigger(const rclcpp::NodeOptions & node_option
   }
 
   trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
-  trigger_thread_ = std::make_unique<std::thread>(&JetsonCameraTrigger::run, this);
+  trigger_thread_ = std::make_unique<std::thread>(&SensorTrigger::run, this);
 }
 
-JetsonCameraTrigger::~JetsonCameraTrigger()
+SensorTrigger::~SensorTrigger()
 {
   if (trigger_thread_) {
     if (trigger_thread_->joinable()) {
@@ -61,7 +61,7 @@ JetsonCameraTrigger::~JetsonCameraTrigger()
   }
 }
 
-void JetsonCameraTrigger::run()
+void SensorTrigger::run()
 {
   builtin_interfaces::msg::Time trigger_time_msg;
 
@@ -132,7 +132,7 @@ void JetsonCameraTrigger::run()
   // Cleanup
   unexport_gpio_pin(gpio_);
 }
-}  // namespace jetson_camera_trigger
+}  // namespace sensor_trigger
 
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(jetson_camera_trigger::JetsonCameraTrigger)
+RCLCPP_COMPONENTS_REGISTER_NODE(sensor_trigger::SensorTrigger)

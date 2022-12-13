@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JETSON_CAMERA_TRIGGER__JETSON_CAMERA_TRIGGER_HPP_
-#define JETSON_CAMERA_TRIGGER__JETSON_CAMERA_TRIGGER_HPP_
+#ifndef SENSOR_TRIGGER__SENSOR_TRIGGER_HPP_
+#define SENSOR_TRIGGER__SENSOR_TRIGGER_HPP_
 
 #include <builtin_interfaces/msg/time.hpp>
 #include <rclcpp/rclcpp.hpp>
@@ -22,13 +22,13 @@
 #include <string>
 #include <vector>
 
-namespace jetson_camera_trigger
+namespace sensor_trigger
 {
-class JetsonCameraTrigger : public rclcpp::Node
+class SensorTrigger : public rclcpp::Node
 {
 public:
-  explicit JetsonCameraTrigger(const rclcpp::NodeOptions & node_options);
-  ~JetsonCameraTrigger();
+  explicit SensorTrigger(const rclcpp::NodeOptions & node_options);
+  ~SensorTrigger();
 
 private:
   // ros::NodeHandle nh_{ "" };
@@ -45,6 +45,6 @@ private:
 
   void run();
 };
-}  // namespace jetson_camera_trigger
+}  // namespace sensor_trigger
 
-#endif  // JETSON_CAMERA_TRIGGER__JETSON_CAMERA_TRIGGER_HPP_
+#endif  // SENSOR_TRIGGER__SENSOR_TRIGGER_HPP_

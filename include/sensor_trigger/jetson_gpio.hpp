@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef JETSON_CAMERA_TRIGGER__JETSON_GPIO_HPP_
-#define JETSON_CAMERA_TRIGGER__JETSON_GPIO_HPP_
+#ifndef SENSOR_TRIGGER__JETSON_GPIO_HPP_
+#define SENSOR_TRIGGER__JETSON_GPIO_HPP_
 
 #include <map>
 
@@ -42,4 +42,4 @@ int unexport_gpio_pin(int gpio_pin);
 int set_gpio_pin_direction(int gpio_pin, gpio_direction direction);
 int set_gpio_pin_state(int gpio_pin, gpio_state state);
 
-#endif  // JETSON_CAMERA_TRIGGER__JETSON_GPIO_HPP_
+#endif  // SENSOR_TRIGGER__JETSON_GPIO_HPP_

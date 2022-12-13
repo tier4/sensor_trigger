@@ -38,6 +38,6 @@ jobs:
       - name: build and test
         uses: ros-tooling/action-ros-ci@v0.2
         with:
-          package-name: jetson_camera_trigger
+          package-name: sensor_trigger
           target-ros2-distro: ${{ matrix.ros_distribution }}
           vcs-repo-file-url: ""
