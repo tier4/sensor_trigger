@@ -1,9 +1,9 @@
 <?xml version="1.0"?>
 <?xml-model href="http://download.ros.org/schema/package_format3.xsd" schematypens="http://www.w3.org/2001/XMLSchema"?>
 <package format="3">
-  <name>jetson_camera_trigger</name>
+  <name>sensor_trigger</name>
   <version>0.1.0</version>
-  <description>The jetson_camera_trigger package</description>
+  <description>The sensor_trigger package</description>
   <maintainer email="david.wong@tier4.jp">drwnz</maintainer>
   <license>Apache License 2.0</license>
 

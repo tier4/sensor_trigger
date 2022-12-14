@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.5)
-project(jetson_camera_trigger)
+project(sensor_trigger)
 
 ### Compile options
 if(NOT CMAKE_CXX_STANDARD)
@@ -15,12 +15,12 @@ find_package(ament_cmake_auto REQUIRED)
 ament_auto_find_build_dependencies()
 
 ament_auto_add_library(${PROJECT_NAME} SHARED
-  src/jetson_camera_trigger.cpp
+  src/sensor_trigger.cpp
   src/jetson_gpio.cpp
 )
 
 rclcpp_components_register_node(${PROJECT_NAME}
-  PLUGIN "jetson_camera_trigger::JetsonCameraTrigger"
+  PLUGIN "sensor_trigger::SensorTrigger"
   EXECUTABLE ${PROJECT_NAME}_exe
 )
 

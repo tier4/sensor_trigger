@@ -6,7 +6,7 @@
   <arg name="frame_rate" default="10.0"/>
 
   <push-ros-namespace namespace="$(var namespace)"/>
-  <node pkg="jetson_camera_trigger" exec="jetson_camera_trigger_exe" name="jetson_camera_trigger">
+  <node pkg="sensor_trigger" exec="sensor_trigger_exe" name="sensor_trigger">
     <param name="gpio" value="$(var gpio)"/>
     <param name="phase" value="$(var phase)"/>
     <param name="frame_rate" value="$(var frame_rate)"/>
