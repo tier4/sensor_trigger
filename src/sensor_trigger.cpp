@@ -33,13 +33,13 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
     return;
   }
 
-  if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
-    RCLCPP_WARN_STREAM(
-      get_logger(),
-      "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
-    rclcpp::shutdown();
-    return;
-  }
+  // if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
+  //   RCLCPP_WARN_STREAM(
+  //     get_logger(),
+  //     "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
+  //   rclcpp::shutdown();
+  //   return;
+  // }
 
   if (fps_ < 1.0) {
     RCLCPP_WARN_STREAM(
@@ -50,6 +50,15 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
 
   trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
   trigger_thread_ = std::make_unique<std::thread>(&SensorTrigger::run, this);
+
+  sched_param sch;
+  int policy;
+  pthread_getschedparam(trigger_thread_->native_handle(), &policy, &sch);
+  sch.sched_priority = 30;
+  if (pthread_setschedparam(trigger_thread_->native_handle(), SCHED_FIFO, &sch)) {
+    RCLCPP_WARN_STREAM(
+      get_logger(), "Failed to set schedule parameters: " << strerror(errno) << ".");
+  }
 }
 
 SensorTrigger::~SensorTrigger()
@@ -103,6 +112,7 @@ void SensorTrigger::run()
         rclcpp::sleep_for(std::chrono::nanoseconds(wait_nsec / 2));
       }
     } while (wait_nsec > 1e7);
+    std::lock_guard<std::mutex> guard(iomutex_);
     // Block the last millisecond
     now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
     if (start_nsec == end_nsec) {
@@ -119,14 +129,14 @@ void SensorTrigger::run()
       }
     }
     // Trigger!
-    set_gpio_pin_state(gpio_, GPIO_HIGH);
+    // set_gpio_pin_state(gpio_, GPIO_HIGH);
     rclcpp::sleep_for(std::chrono::nanoseconds(pulse_width));
     rclcpp::Time now = rclcpp::Clock{RCL_SYSTEM_TIME}.now();
     int64_t now_sec = now.nanoseconds() / 1e9;
     trigger_time_msg.sec = (int32_t)now_sec;
     trigger_time_msg.nanosec = (uint32_t)now_nsec;
     trigger_time_publisher_->publish(trigger_time_msg);
-    set_gpio_pin_state(gpio_, GPIO_LOW);
+    // set_gpio_pin_state(gpio_, GPIO_LOW);
     target_nsec = target_nsec + interval_nsec >= 1e9 ? start_nsec : target_nsec + interval_nsec;
   }
   // Cleanup

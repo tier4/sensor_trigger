@@ -18,7 +18,10 @@
 #include <builtin_interfaces/msg/time.hpp>
 #include <rclcpp/rclcpp.hpp>
 
+#include <pthread.h>
+
 #include <memory>
+#include <mutex>
 #include <string>
 #include <vector>
 
@@ -39,6 +42,7 @@ private:
   double fps_;
   double phase_;
   int gpio_;
+  std::mutex iomutex_;
 
   // Trigger thread
   std::unique_ptr<std::thread> trigger_thread_;
