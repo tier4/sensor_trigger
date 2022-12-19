@@ -11,17 +11,28 @@ This repository provides a ROS2 package for generating sensor trigger signals on
     - With current BSP versions, Ubuntu 18.04 must be run on Jetson Xavier AGX within a docker environment. Please refer to [tier4/perception_ecu_container](https://github.com/tier4/perception_ecu_container) for how to prepare the OS and ROS2 environment.
 
 ## Installation
-The package can be built and installed in the desired ROS2 workspace like any other.
-Create or change into your workspace directory, and execute the following:
-```bash
-$ mkdir -p src
-$ git clone git@github.com:tier4/sensor_trigger.git src
-$ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to sensor_trigger
-```
+1. Create or change into your workspace directory, and execute the following:
+    ```bash
+    $ mkdir -p src
+    $ git clone git@github.com:tier4/sensor_trigger.git src
+    $ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to sensor_trigger
+    ```
+2. The sensor trigger node requires as close to real-time operation as possible to maintain reliable trigger timing under heavy CPU load. 
+If this is required, it is recommended to allow thread schedule priority setting to the ROS2 user by adding the following line to `/etc/security/limits.conf`
+    ```
+    <username>    -   rtprio   98
+    ```
+    After saving the edited file (as sudo), a reboot will be required.
+
+    Some notes about thread scheduling:
+    - If you do not make the settings in (2), the node will run but the timeing thread will not be scheuled at any higher priority that other user threads and interruption may occur, resulting in high jitter in the trigger output.
+    - When running in a ROS2 docker, the settings in (2) are not required as the docker user is by default the root user.
 
 ## Usage
 The sensor trigger node will output trigger pulses on the specified GPIO pin at the configured frequency.
 The phase parameter is used to control the timing of the pulse relative to Top of Second (ToS), allowing fine-grained control of the trigger timing relative to other sensors and ECUs when all connected devices have been synchronized using Precision Time Protocol (PTP).
+
+Setting the CPU core for operation is recommended to improve timing stability. As CPU 0 is used for system interrputs, a CPU core >0 is recommended. If multiple sensor trigger nodes are instantiated, make sure they each use a different CPU core. You can check how many CPU cores are available on your system with `nproc --all`.
 
 The node can be launched with the default parameters as follows:
 ```bash
@@ -49,6 +60,7 @@ This node does not take any inputs.
 | `gpio`       | int    | Output GPIO pin - see below for assigned pins on RQX-58G     |
 | `phase`      | double | Desired phase of the trigger relative to ToS (Top of Second) |
 | `frame_rate` | double | Desired frequency of the trigger in Hz                       |
+| `cpu`        | int    | Desired CPU core for execution*                              |
 
 ### Included Pin Mappings (RQX-58G)
 
