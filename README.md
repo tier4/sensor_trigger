@@ -13,20 +13,20 @@ This repository provides a ROS2 package for generating sensor trigger signals on
 ## Installation
 The package can be built and installed in the desired ROS2 workspace like any other.
 Create or change into your workspace directory, and execute the following:
-    ```bash
-    $ mkdir -p src
-    $ git clone git@github.com:tier4/sensor_trigger.git src
-    $ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to sensor_trigger
-    ```
+```bash
+$ mkdir -p src
+$ git clone git@github.com:tier4/sensor_trigger.git src
+$ colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to sensor_trigger
+```
 
 ## Usage
 The sensor trigger node will output trigger pulses on the specified GPIO pin at the configured frequency.
 The phase parameter is used to control the timing of the pulse relative to Top of Second (ToS), allowing fine-grained control of the trigger timing relative to other sensors and ECUs when all connected devices have been synchronized using Precision Time Protocol (PTP).
 
 The node can be launched with the default parameters as follows:
-    ```bash
-    $ ros2 launch sensor_trigger sensor_trigger.launch
-    ```
+```bash
+$ ros2 launch sensor_trigger sensor_trigger.launch
+```
 
 ## Inputs / Outputs
 
