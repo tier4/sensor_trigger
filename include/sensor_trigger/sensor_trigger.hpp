@@ -42,6 +42,7 @@ private:
   double fps_;
   double phase_;
   int gpio_;
+  int cpu_;
   std::mutex iomutex_;
 
   // Trigger thread

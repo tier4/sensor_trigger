@@ -24,6 +24,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   fps_ = declare_parameter("frame_rate", 10.0);
   phase_ = declare_parameter("phase", 0.0);
   gpio_ = declare_parameter("gpio", 0);
+  cpu_ = declare_parameter("cpu", 1);
 
   if (gpio_ <= 0) {
     RCLCPP_WARN_STREAM(
@@ -48,9 +49,31 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
     return;
   }
 
+  if (cpu_ < 0 || cpu_ >= static_cast<int>(std::thread::hardware_concurrency())) {
+    RCLCPP_WARN_STREAM(
+      get_logger(), "Selected CPU "
+                      << cpu_ << " is not available on this architecture. Not triggering on GPIO "
+                      << gpio_ << ".");
+    rclcpp::shutdown();
+    return;
+  }
+
+  // Set CPU affinity
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(cpu_, &cpuset);
+  if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset)) {
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to set CPU affinity: " << strerror(errno) << ".");
+  }
+  if (pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset)) {
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to check CPU affinity: " << strerror(errno) << ".");
+  }
+
+  // Create thread
   trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
   trigger_thread_ = std::make_unique<std::thread>(&SensorTrigger::run, this);
 
+  // Set thread priority
   sched_param sch;
   int policy;
   pthread_getschedparam(trigger_thread_->native_handle(), &policy, &sch);

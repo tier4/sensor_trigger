@@ -4,11 +4,13 @@
   <arg name="gpio" default="51"/>
   <arg name="phase" default="0.0"/>
   <arg name="frame_rate" default="10.0"/>
+  <arg name="assigned_cpu" default="1"/>
 
   <push-ros-namespace namespace="$(var namespace)"/>
   <node pkg="sensor_trigger" exec="sensor_trigger_exe" name="sensor_trigger">
     <param name="gpio" value="$(var gpio)"/>
     <param name="phase" value="$(var phase)"/>
     <param name="frame_rate" value="$(var frame_rate)"/>
+    <param name="cpu" value="$(var assigned_cpu)"/>
   </node>
 </launch>
