@@ -55,12 +55,14 @@ This node does not take any inputs.
 
 ### Core Parameters
 
-| Name         | Type   | Description                                                  |
-| ------------ | ------ | ------------------------------------------------------------ |
-| `gpio`       | int    | Output GPIO pin - see below for assigned pins on RQX-58G     |
-| `phase`      | double | Desired phase of the trigger relative to ToS (Top of Second) |
-| `frame_rate` | double | Desired frequency of the trigger in Hz                       |
-| `cpu`        | int    | Desired CPU core for execution*                              |
+| Name          | Type   | Description                                                  |
+| ------------- | ------ | ------------------------------------------------------------ |
+| `gpio`        | int    | Output GPIO pin - see below for assigned pins on RQX-58G     |
+| `phase`       | double | Desired phase of the trigger relative to ToS (Top of Second) |
+| `frame_rate`  | double | Desired frequency of the trigger in Hz                       |
+| `cpu_core_id` | int    | Desired CPU core for execution*                              |
+
+*This is indexed from CPU core 0 (which will be CPU 1 in ```htop```).
 
 ### Included Pin Mappings (RQX-58G)
 

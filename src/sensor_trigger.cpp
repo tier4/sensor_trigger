@@ -24,7 +24,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   fps_ = declare_parameter("frame_rate", 10.0);
   phase_ = declare_parameter("phase", 0.0);
   gpio_ = declare_parameter("gpio", 0);
-  cpu_ = declare_parameter("cpu", 1);
+  cpu_ = declare_parameter("cpu_core_id", 1);
 
   if (gpio_ <= 0) {
     RCLCPP_WARN_STREAM(
@@ -51,7 +51,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
 
   if (cpu_ < 0 || cpu_ >= static_cast<int>(std::thread::hardware_concurrency())) {
     RCLCPP_WARN_STREAM(
-      get_logger(), "Selected CPU "
+      get_logger(), "Selected CPU core"
                       << cpu_ << " is not available on this architecture. Not triggering on GPIO "
                       << gpio_ << ".");
     rclcpp::shutdown();
