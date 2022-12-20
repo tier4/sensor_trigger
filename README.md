@@ -71,7 +71,7 @@ This node does not take any inputs.
 | `frame_rate`  | double | Desired frequency of the trigger in Hz                       |
 | `cpu_core_id` | int    | Desired CPU core for execution\*                             |
 
-*This is indexed from CPU core 0 (which will be CPU 1 in ```htop```).
+\*This is indexed from CPU core 0 (which will be CPU 1 in `htop`).
 
 ### Included Pin Mappings (RQX-58G)
 
