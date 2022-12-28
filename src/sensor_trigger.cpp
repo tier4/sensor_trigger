@@ -24,9 +24,10 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   fps_ = declare_parameter("frame_rate", 10.0);
   phase_ = declare_parameter("phase", 0.0);
   gpio_ = declare_parameter("gpio", 0);
+  cpu_ = declare_parameter("cpu_core_id", 1);
 
   if (gpio_ <= 0) {
-    RCLCPP_WARN_STREAM(
+    RCLCPP_ERROR_STREAM(
       get_logger(),
       "No valid trigger GPIO specified. Not using triggering on GPIO " << gpio_ << ".");
     rclcpp::shutdown();
@@ -34,7 +35,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   }
 
   if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
-    RCLCPP_WARN_STREAM(
+    RCLCPP_ERROR_STREAM(
       get_logger(),
       "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
     rclcpp::shutdown();
@@ -42,14 +43,43 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   }
 
   if (fps_ < 1.0) {
-    RCLCPP_WARN_STREAM(
+    RCLCPP_ERROR_STREAM(
       get_logger(), "Unable to trigger slower than 1 fps. Not triggering on GPIO " << gpio_ << ".");
     rclcpp::shutdown();
     return;
   }
 
+  if (cpu_ < 0 || cpu_ >= static_cast<int>(std::thread::hardware_concurrency())) {
+    RCLCPP_WARN_STREAM(
+      get_logger(), "Selected CPU core"
+                      << cpu_ << " is not available on this architecture. Not triggering on GPIO "
+                      << gpio_ << ".");
+  }
+
+  // Set CPU affinity
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(cpu_, &cpuset);
+  if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset)) {
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to set CPU affinity: " << strerror(errno) << ".");
+  }
+  if (pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset)) {
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to check CPU affinity: " << strerror(errno) << ".");
+  }
+
+  // Create thread
   trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
   trigger_thread_ = std::make_unique<std::thread>(&SensorTrigger::run, this);
+
+  // Set thread priority
+  sched_param sch;
+  int policy;
+  pthread_getschedparam(trigger_thread_->native_handle(), &policy, &sch);
+  sch.sched_priority = 30;
+  if (pthread_setschedparam(trigger_thread_->native_handle(), SCHED_FIFO, &sch)) {
+    RCLCPP_WARN_STREAM(
+      get_logger(), "Failed to set schedule parameters: " << strerror(errno) << ".");
+  }
 }
 
 SensorTrigger::~SensorTrigger()
@@ -103,6 +133,7 @@ void SensorTrigger::run()
         rclcpp::sleep_for(std::chrono::nanoseconds(wait_nsec / 2));
       }
     } while (wait_nsec > 1e7);
+    std::lock_guard<std::mutex> guard(iomutex_);
     // Block the last millisecond
     now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
     if (start_nsec == end_nsec) {
