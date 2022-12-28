@@ -27,7 +27,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   cpu_ = declare_parameter("cpu_core_id", 1);
 
   if (gpio_ <= 0) {
-    RCLCPP_WARN_STREAM(
+    RCLCPP_ERROR_STREAM(
       get_logger(),
       "No valid trigger GPIO specified. Not using triggering on GPIO " << gpio_ << ".");
     rclcpp::shutdown();
@@ -35,7 +35,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   }
 
   if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
-    RCLCPP_WARN_STREAM(
+    RCLCPP_ERROR_STREAM(
       get_logger(),
       "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
     rclcpp::shutdown();
@@ -45,8 +45,6 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   if (fps_ < 1.0) {
     RCLCPP_WARN_STREAM(
       get_logger(), "Unable to trigger slower than 1 fps. Not triggering on GPIO " << gpio_ << ".");
-    rclcpp::shutdown();
-    return;
   }
 
   if (cpu_ < 0 || cpu_ >= static_cast<int>(std::thread::hardware_concurrency())) {
@@ -54,8 +52,6 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
       get_logger(), "Selected CPU core"
                       << cpu_ << " is not available on this architecture. Not triggering on GPIO "
                       << gpio_ << ".");
-    rclcpp::shutdown();
-    return;
   }
 
   // Set CPU affinity
