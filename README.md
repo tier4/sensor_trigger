@@ -32,7 +32,7 @@ This repository provides a ROS2 package for generating sensor trigger signals on
         After saving the edited file (as sudo), a reboot will be required.
 
         Some notes about thread scheduling:
-        - If you do not make the settings in (2), the node will run but the timeing thread will not be scheuled at any higher priority that other user threads and interruption may occur, resulting in high jitter in the trigger output.
+        - If you do not make the settings in (2), the node will run but the timing thread will not be scheduled at any higher priority that other user threads and interruption may occur, resulting in high jitter in the trigger output.
         - When running in a ROS2 docker, the settings in (2) are not required as the docker user is by default the root user.
 
 ## Usage
@@ -40,7 +40,7 @@ This repository provides a ROS2 package for generating sensor trigger signals on
 The sensor trigger node will output trigger pulses on the specified GPIO pin at the configured frequency.
 The phase parameter is used to control the timing of the pulse relative to Top of Second (ToS), allowing fine-grained control of the trigger timing relative to other sensors and ECUs when all connected devices have been synchronized using Precision Time Protocol (PTP).
 
-Setting the CPU core for operation is recommended to improve timing stability. As CPU 0 is used for system interrputs, a CPU core >0 is recommended. If multiple sensor trigger nodes are instantiated, make sure they each use a different CPU core. You can check how many CPU cores are available on your system with `nproc --all`.
+Setting the CPU core for operation is recommended to improve timing stability. As CPU 0 is used for system interrupts, a CPU core >0 is recommended. If multiple sensor trigger nodes are instantiated, make sure they each use a different CPU core. You can check how many CPU cores are available on your system with `nproc --all`.
 
 The node can be launched with the default parameters as follows:
 
