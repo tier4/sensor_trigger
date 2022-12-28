@@ -43,8 +43,10 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   }
 
   if (fps_ < 1.0) {
-    RCLCPP_WARN_STREAM(
+    RCLCPP_ERROR_STREAM(
       get_logger(), "Unable to trigger slower than 1 fps. Not triggering on GPIO " << gpio_ << ".");
+    rclcpp::shutdown();
+    return;
   }
 
   if (cpu_ < 0 || cpu_ >= static_cast<int>(std::thread::hardware_concurrency())) {
