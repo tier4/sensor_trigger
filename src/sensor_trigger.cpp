@@ -25,6 +25,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   phase_ = declare_parameter("phase", 0.0);
   gpio_ = declare_parameter("gpio", 0);
   cpu_ = declare_parameter("cpu_core_id", 1);
+  pulse_width_ms_ = declare_parameter("pulse_width_ms", 5);
 
   if (gpio_ <= 0) {
     RCLCPP_ERROR_STREAM(
@@ -100,7 +101,7 @@ void SensorTrigger::run()
   int64_t end_nsec;
   int64_t target_nsec;
   int64_t interval_nsec = (int64_t)(1e9 / fps_);
-  int64_t pulse_width = 5e6;
+  int64_t pulse_width = pulse_width_ms_ * 1e6;  // millisecond -> nanoseconds
   int64_t wait_nsec = 0;
   int64_t now_nsec = 0;
   // Fix this later to remove magic numbers

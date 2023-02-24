@@ -69,6 +69,7 @@ This node does not take any inputs.
 | `phase`       | double | Desired phase of the trigger relative to ToS (Top of Second) |
 | `frame_rate`  | double | Desired frequency of the trigger in Hz                       |
 | `cpu_core_id` | int    | Desired CPU core for execution\*                             |
+| `pulse_width_ms` | int | Desired pulse width (i.e., time period that GPIO pin to be high) in millisecond |
 
 \*This is indexed from CPU core 0 (which will be CPU 1 in `htop`).
 

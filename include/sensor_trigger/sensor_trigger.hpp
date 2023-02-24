@@ -44,6 +44,7 @@ private:
   int gpio_;
   int cpu_;
   std::mutex iomutex_;
+  int64_t pulse_width_ms_;
 
   // Trigger thread
   std::unique_ptr<std::thread> trigger_thread_;
