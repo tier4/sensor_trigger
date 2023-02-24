@@ -45,6 +45,7 @@ private:
   int cpu_;
   std::mutex iomutex_;
   int64_t pulse_width_ms_;
+  jetson_gpio::JetsonGpio gpio_handler_;
 
   // Trigger thread
   std::unique_ptr<std::thread> trigger_thread_;

@@ -35,7 +35,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
     return;
   }
 
-  if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
+  if (!gpio_handler_.init_gpio_pin(gpio_, GPIO_OUTPUT)) {
     RCLCPP_ERROR_STREAM(
       get_logger(),
       "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
@@ -151,18 +151,22 @@ void SensorTrigger::run()
       }
     }
     // Trigger!
-    set_gpio_pin_state(gpio_, GPIO_HIGH);
+    bool to_high = gpio_handler_.set_gpio_pin_state(GPIO_HIGH);
     rclcpp::sleep_for(std::chrono::nanoseconds(pulse_width));
     rclcpp::Time now = rclcpp::Clock{RCL_SYSTEM_TIME}.now();
     int64_t now_sec = now.nanoseconds() / 1e9;
     trigger_time_msg.sec = (int32_t)now_sec;
     trigger_time_msg.nanosec = (uint32_t)now_nsec;
     trigger_time_publisher_->publish(trigger_time_msg);
-    set_gpio_pin_state(gpio_, GPIO_LOW);
+    bool to_low = gpio_handler_.set_gpio_pin_state(GPIO_LOW);
     target_nsec = target_nsec + interval_nsec >= 1e9 ? start_nsec : target_nsec + interval_nsec;
+    if (!(to_high && to_low)) {
+      RCLCPP_ERROR_STREAM(get_logger(),
+                          "Failed to set GPIO status: " << strerror(errno));
+      rclcpp::shutdown();
+      return;
+    }
   }
-  // Cleanup
-  unexport_gpio_pin(gpio_);
 }
 }  // namespace sensor_trigger
 
