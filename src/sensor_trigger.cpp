@@ -161,8 +161,7 @@ void SensorTrigger::run()
     bool to_low = gpio_handler_.set_gpio_pin_state(GPIO_LOW);
     target_nsec = target_nsec + interval_nsec >= 1e9 ? start_nsec : target_nsec + interval_nsec;
     if (!(to_high && to_low)) {
-      RCLCPP_ERROR_STREAM(get_logger(),
-                          "Failed to set GPIO status: " << strerror(errno));
+      RCLCPP_ERROR_STREAM(get_logger(), "Failed to set GPIO status: " << strerror(errno));
       rclcpp::shutdown();
       return;
     }
