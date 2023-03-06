@@ -25,6 +25,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   phase_ = declare_parameter("phase", 0.0);
   gpio_ = declare_parameter("gpio", 0);
   cpu_ = declare_parameter("cpu_core_id", 1);
+  pulse_width_ms_ = declare_parameter("pulse_width_ms", 5);
 
   if (gpio_ <= 0) {
     RCLCPP_ERROR_STREAM(
@@ -34,7 +35,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
     return;
   }
 
-  if (export_gpio_pin(gpio_) || set_gpio_pin_direction(gpio_, GPIO_OUTPUT)) {
+  if (!gpio_handler_.init_gpio_pin(gpio_, GPIO_OUTPUT)) {
     RCLCPP_ERROR_STREAM(
       get_logger(),
       "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
@@ -100,7 +101,7 @@ void SensorTrigger::run()
   int64_t end_nsec;
   int64_t target_nsec;
   int64_t interval_nsec = (int64_t)(1e9 / fps_);
-  int64_t pulse_width = 5e6;
+  int64_t pulse_width = pulse_width_ms_ * 1e6;  // millisecond -> nanoseconds
   int64_t wait_nsec = 0;
   int64_t now_nsec = 0;
   // Fix this later to remove magic numbers
@@ -150,18 +151,21 @@ void SensorTrigger::run()
       }
     }
     // Trigger!
-    set_gpio_pin_state(gpio_, GPIO_HIGH);
+    bool to_high = gpio_handler_.set_gpio_pin_state(GPIO_HIGH);
     rclcpp::sleep_for(std::chrono::nanoseconds(pulse_width));
     rclcpp::Time now = rclcpp::Clock{RCL_SYSTEM_TIME}.now();
     int64_t now_sec = now.nanoseconds() / 1e9;
     trigger_time_msg.sec = (int32_t)now_sec;
     trigger_time_msg.nanosec = (uint32_t)now_nsec;
     trigger_time_publisher_->publish(trigger_time_msg);
-    set_gpio_pin_state(gpio_, GPIO_LOW);
+    bool to_low = gpio_handler_.set_gpio_pin_state(GPIO_LOW);
     target_nsec = target_nsec + interval_nsec >= 1e9 ? start_nsec : target_nsec + interval_nsec;
+    if (!(to_high && to_low)) {
+      RCLCPP_ERROR_STREAM(get_logger(), "Failed to set GPIO status: " << strerror(errno));
+      rclcpp::shutdown();
+      return;
+    }
   }
-  // Cleanup
-  unexport_gpio_pin(gpio_);
 }
 }  // namespace sensor_trigger
 

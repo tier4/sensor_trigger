@@ -15,7 +15,11 @@
 #ifndef SENSOR_TRIGGER__JETSON_GPIO_HPP_
 #define SENSOR_TRIGGER__JETSON_GPIO_HPP_
 
+#include <fcntl.h>
+#include <unistd.h>
+
 #include <map>
+#include <string>
 
 #define SYSFS_GPIO_DIR "/sys/class/gpio"
 #define BUFFER_SIZE 64
@@ -27,19 +31,28 @@
 typedef int gpio_direction;
 typedef int gpio_state;
 
+namespace jetson_gpio
+{
 // Mapping of GPIO number to pin number for ROSCubeX
 // Note: pin 5->216 is pin 5 on the DB50 connector, run by GPIO chip 216 (starting at GPIO number
 // 216)
 static std::map<int, int> pin_gpio_mapping{{5, 216}, {51, 408}, {52, 350}, {53, 446}, {54, 445}};
 
-int export_gpio(int gpio);
-int unexport_gpio(int gpio);
-int set_gpio_direction(int gpio, gpio_direction direction);
-int set_gpio_state(int gpio, gpio_state state);
+class JetsonGpio
+{
+public:
+  JetsonGpio() : state_file_descriptor_(-1) {}
+  ~JetsonGpio();
+  bool init_gpio_pin(int gpio_pin, gpio_direction direction);
+  bool set_gpio_pin_state(gpio_state state);
 
-int export_gpio_pin(int gpio_pin);
-int unexport_gpio_pin(int gpio_pin);
-int set_gpio_pin_direction(int gpio_pin, gpio_direction direction);
-int set_gpio_pin_state(int gpio_pin, gpio_state state);
+protected:
+  bool export_gpio();
+  bool unexport_gpio();
+  bool set_gpio_direction(gpio_direction direction);
 
+  int state_file_descriptor_;
+  int gpio_;
+};
+}  // namespace jetson_gpio
 #endif  // SENSOR_TRIGGER__JETSON_GPIO_HPP_

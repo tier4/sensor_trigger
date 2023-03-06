@@ -14,71 +14,117 @@
 
 #include <sensor_trigger/jetson_gpio.hpp>
 
-#include <fcntl.h>
-#include <unistd.h>
-
 #include <cstdio>
 
-int export_gpio(int gpio)
+namespace jetson_gpio
+{
+JetsonGpio::~JetsonGpio()
+{
+  if (state_file_descriptor_ > -1) {
+    close(state_file_descriptor_);
+  }
+
+  // Regardless of the existence of other processes that uses the same GPIO pin
+  // (incl. zombie GPIO port opening because of failure exit),
+  // this unexport closes the target GPIO pin anyway.
+  // This behavior intends to make next try to use this GPIO pin success.
+  unexport_gpio();
+}
+
+bool JetsonGpio::init_gpio_pin(int gpio_pin, gpio_direction direction)
+{
+  gpio_ = pin_gpio_mapping[gpio_pin];
+  // Setup GPIO to use
+  if (!export_gpio()) {
+    return false;
+  }
+  if (!set_gpio_direction(direction)) {
+    return false;
+  }
+
+  // Open file for writing state and keep it as a member of the class to avoid iterative open/close
+  char buffer[BUFFER_SIZE];
+  snprintf(buffer, sizeof(buffer), SYSFS_GPIO_DIR "/gpio%d/value", gpio_);
+  switch (direction) {
+    case GPIO_OUTPUT:
+      state_file_descriptor_ = open(buffer, O_WRONLY);
+      break;
+    case GPIO_INPUT:
+      state_file_descriptor_ = open(buffer, O_RDONLY);
+      break;
+  }
+  if (state_file_descriptor_ < 0) {
+    return false;
+  }
+
+  return true;
+}
+
+bool JetsonGpio::export_gpio()
 {
   int file_descriptor, buffer_length;
   char buffer[BUFFER_SIZE];
 
   file_descriptor = open(SYSFS_GPIO_DIR "/export", O_WRONLY);
   if (file_descriptor < 0) {
-    return file_descriptor;
+    return false;
   }
-  buffer_length = snprintf(buffer, sizeof(buffer), "%d", gpio);
+
+  buffer_length = snprintf(buffer, sizeof(buffer), "%d", gpio_);
   if (write(file_descriptor, buffer, buffer_length) != buffer_length) {
-    return file_descriptor;
+    close(file_descriptor);
+    return false;
   }
   close(file_descriptor);
 
   // Delay to prevent errors in next sysfs call
   usleep(1000000);
 
-  return 0;
+  return true;
 }
 
-int unexport_gpio(int gpio)
+bool JetsonGpio::unexport_gpio()
 {
   int file_descriptor, buffer_length;
   char buffer[BUFFER_SIZE];
 
   file_descriptor = open(SYSFS_GPIO_DIR "/unexport", O_WRONLY);
   if (file_descriptor < 0) {
-    return file_descriptor;
+    return false;
   }
-  buffer_length = snprintf(buffer, sizeof(buffer), "%d", gpio);
+  buffer_length = snprintf(buffer, sizeof(buffer), "%d", gpio_);
   if (write(file_descriptor, buffer, buffer_length) != buffer_length) {
-    return file_descriptor;
+    close(file_descriptor);
+    return false;
   }
   close(file_descriptor);
 
   // Delay to prevent errors in next sysfs call
   usleep(1000000);
 
-  return 0;
+  return true;
 }
 
-int set_gpio_direction(int gpio, gpio_direction direction)
+bool JetsonGpio::set_gpio_direction(gpio_direction direction)
 {
   int file_descriptor;
   char buffer[BUFFER_SIZE];
 
-  snprintf(buffer, sizeof(buffer), SYSFS_GPIO_DIR "/gpio%d/direction", gpio);
+  snprintf(buffer, sizeof(buffer), SYSFS_GPIO_DIR "/gpio%d/direction", gpio_);
 
   file_descriptor = open(buffer, O_WRONLY);
   if (file_descriptor < 0) {
-    return file_descriptor;
+    return false;
   }
   if (direction) {
     if (write(file_descriptor, "out", 4) != 4) {
-      return file_descriptor;
+      close(file_descriptor);
+      return false;
     }
   } else {
     if (write(file_descriptor, "in", 3) != 3) {
-      return file_descriptor;
+      close(file_descriptor);
+      return false;
     }
   }
   close(file_descriptor);
@@ -86,43 +132,20 @@ int set_gpio_direction(int gpio, gpio_direction direction)
   // Delay to prevent errors in next sysfs call
   usleep(1000000);
 
-  return 0;
+  return true;
 }
 
-int set_gpio_state(int gpio, gpio_state state)
+bool JetsonGpio::set_gpio_pin_state(gpio_state state)
 {
-  int file_descriptor;
-  char buffer[BUFFER_SIZE];
-
-  snprintf(buffer, sizeof(buffer), SYSFS_GPIO_DIR "/gpio%d/value", gpio);
-
-  file_descriptor = open(buffer, O_WRONLY);
-  if (file_descriptor < 0) {
-    return file_descriptor;
-  }
   if (state) {
-    if (write(file_descriptor, "1", 2) != 2) {
-      return file_descriptor;
+    if (write(state_file_descriptor_, "1", 2) != 2) {
+      return false;
     }
   } else {
-    if (write(file_descriptor, "0", 2) != 2) {
-      return file_descriptor;
+    if (write(state_file_descriptor_, "0", 2) != 2) {
+      return false;
     }
   }
-  close(file_descriptor);
-  return 0;
+  return true;
 }
-
-int export_gpio_pin(int gpio_pin) { return export_gpio(pin_gpio_mapping[gpio_pin]); }
-
-int unexport_gpio_pin(int gpio_pin) { return unexport_gpio(pin_gpio_mapping[gpio_pin]); }
-
-int set_gpio_pin_direction(int gpio_pin, gpio_direction direction)
-{
-  return set_gpio_direction(pin_gpio_mapping[gpio_pin], direction);
-}
-
-int set_gpio_pin_state(int gpio_pin, gpio_state state)
-{
-  return set_gpio_state(pin_gpio_mapping[gpio_pin], state);
-}
+}  // namespace jetson_gpio
