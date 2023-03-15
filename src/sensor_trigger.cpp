@@ -141,7 +141,7 @@ void SensorTrigger::run()
         rclcpp::sleep_for(std::chrono::nanoseconds(wait_nsec / 2));
       }
     } while (wait_nsec > 1e7);
-    std::lock_guard<std::mutex> guard(iomutex_);
+    // std::lock_guard<std::mutex> guard(iomutex_);
     // Block the last millisecond
     now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
     if (start_nsec == end_nsec) {

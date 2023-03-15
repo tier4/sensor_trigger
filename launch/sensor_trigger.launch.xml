@@ -1,12 +1,12 @@
 <launch>
   <arg name="frame_id" default="camera0"/>
   <arg name="namespace" default="$(var frame_id)"/>
-  <arg name="gpio_name" default="roscube_trigger1"/>
+  <arg name="gpio_name" default="anvil_misc"/>
   <arg name="phase" default="0.0"/>
   <arg name="frame_rate" default="10.0"/>
-  <arg name="cpu_core_id" default="1"/>
+  <arg name="cpu_core_id" default="11"/>
   <arg name="pulse_width_ms" default="5"/>
-  <arg name="gpio_mapping_file" default="config/gpio_mapping.yaml"/>
+  <arg name="gpio_mapping_file" default="$(find-pkg-share sensor_trigger)/config/gpio_mapping.yaml"/>
 
   <push-ros-namespace namespace="$(var namespace)"/>
   <node pkg="sensor_trigger" exec="sensor_trigger_exe" name="sensor_trigger">
