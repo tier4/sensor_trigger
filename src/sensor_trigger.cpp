@@ -162,7 +162,7 @@ void SensorTrigger::run()
     bool to_high = gpio_handler_.set_gpio_pin_state(GPIO_HIGH);
     rclcpp::sleep_for(std::chrono::nanoseconds(pulse_width));
     rclcpp::Time now = rclcpp::Clock{RCL_SYSTEM_TIME}.now();
-    int64_t now_sec = now.nanoseconds() / 1e9;
+    int64_t now_sec = (now.nanoseconds() - pulse_width) / 1e9; // subtract pulse width to correct timestamp
     trigger_time_msg.sec = (int32_t)now_sec;
     trigger_time_msg.nanosec = (uint32_t)now_nsec;
     trigger_time_publisher_->publish(trigger_time_msg);
