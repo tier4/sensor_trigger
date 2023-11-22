@@ -11,6 +11,7 @@ This repository provides a ROS2 package for generating sensor trigger signals on
 - OS: Ubuntu 18.04 or higher
 - ROS2: Galactic Geochelone
   - With current BSP versions, Ubuntu 18.04 must be run on Jetson Xavier AGX within a docker environment. Please refer to [tier4/perception_ecu_container](https://github.com/tier4/perception_ecu_container) for how to prepare the OS and ROS2 environment.
+- libgpio: This package requires libgpio to control GPIO. You can install it via `sudo apt install libgpiod-dev gpiod`.
 
 ## Installation
 

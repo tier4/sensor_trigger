@@ -20,8 +20,11 @@
 
 #include <map>
 #include <string>
+#include <gpiod.hpp>
+
 
 #define SYSFS_GPIO_DIR "/sys/class/gpio"
+#define GPIO_CHARACTER_DEVICE "/dev/gpiochip0"
 #define BUFFER_SIZE 64
 #define GPIO_OUTPUT 1
 #define GPIO_INPUT 0
@@ -53,6 +56,11 @@ protected:
 
   int state_file_descriptor_;
   int gpio_;
+
+  gpiod::chip gpio_chip_;
+  gpiod::line_bulk gpio_lines_;
+  gpiod::line_request gpio_request_;
+
 };
 }  // namespace jetson_gpio
 #endif  // SENSOR_TRIGGER__JETSON_GPIO_HPP_
