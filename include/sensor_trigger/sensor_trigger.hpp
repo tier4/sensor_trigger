@@ -19,6 +19,7 @@
 #include <rclcpp/rclcpp.hpp>
 
 #include <pthread.h>
+#include <yaml-cpp/yaml.h>
 
 #include <memory>
 #include <mutex>
@@ -38,10 +39,16 @@ private:
   // ros::NodeHandle private_nh_{ "~" };
   rclcpp::Publisher<builtin_interfaces::msg::Time>::SharedPtr trigger_time_publisher_;
 
+  // Map from gpio name to chip number and line number
+  YAML::Node gpio_mapping_;
+  bool get_gpio_chip_and_line();
+
   // Triggering configuration
   double fps_;
   double phase_;
-  int gpio_;
+  std::string gpio_name_;
+  unsigned int gpio_chip_;
+  unsigned int gpio_line_;
   int cpu_;
   std::mutex iomutex_;
   int64_t pulse_width_ms_;

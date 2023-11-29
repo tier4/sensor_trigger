@@ -15,16 +15,15 @@
 #ifndef SENSOR_TRIGGER__JETSON_GPIO_HPP_
 #define SENSOR_TRIGGER__JETSON_GPIO_HPP_
 
+#include <gpiod.hpp>
+
 #include <fcntl.h>
 #include <unistd.h>
 
 #include <map>
 #include <string>
-#include <gpiod.hpp>
-
 
 #define SYSFS_GPIO_DIR "/sys/class/gpio"
-#define GPIO_CHARACTER_DEVICE "/dev/gpiochip0"
 #define BUFFER_SIZE 64
 #define GPIO_OUTPUT 1
 #define GPIO_INPUT 0
@@ -46,7 +45,7 @@ class JetsonGpio
 public:
   JetsonGpio() : state_file_descriptor_(-1) {}
   ~JetsonGpio();
-  bool init_gpio_pin(int gpio_pin, gpio_direction direction);
+  bool init_gpio_pin(unsigned int gpio_chip, unsigned int gpio_line, gpio_direction direction);
   bool set_gpio_pin_state(gpio_state state);
 
 protected:
@@ -60,7 +59,6 @@ protected:
   gpiod::chip gpio_chip_;
   gpiod::line_bulk gpio_lines_;
   gpiod::line_request gpio_request_;
-
 };
 }  // namespace jetson_gpio
 #endif  // SENSOR_TRIGGER__JETSON_GPIO_HPP_

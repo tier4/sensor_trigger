@@ -23,38 +23,44 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   // Get the triggering parameters
   fps_ = declare_parameter("frame_rate", 10.0);
   phase_ = declare_parameter("phase", 0.0);
-  gpio_ = declare_parameter("gpio", 0);
+  gpio_name_ = declare_parameter("gpio_name", "roscube_trigger_1");
   cpu_ = declare_parameter("cpu_core_id", 1);
   pulse_width_ms_ = declare_parameter("pulse_width_ms", 5);
+  std::string gpio_mapping_file = declare_parameter("gpio_mapping_file", "gpio_mapping.yaml");
 
-  if (gpio_ <= 0) {
+  gpio_mapping_ = YAML::LoadFile(gpio_mapping_file);
+
+  if (!get_gpio_chip_and_line) {
     RCLCPP_ERROR_STREAM(
       get_logger(),
-      "No valid trigger GPIO specified. Not using triggering on GPIO " << gpio_ << ".");
+      "No valid trigger GPIO specified. Not using triggering on GPIO name " << gpio_name_ << ".");
     rclcpp::shutdown();
     return;
   }
 
-  if (!gpio_handler_.init_gpio_pin(gpio_, GPIO_OUTPUT)) {
+  if (!gpio_handler_.init_gpio_pin(gpio_chip_, gpio_line_, GPIO_OUTPUT)) {
     RCLCPP_ERROR_STREAM(
-      get_logger(),
-      "Failed to initialize GPIO trigger. Not using triggering on GPIO " << gpio_ << ".");
+      get_logger(), "Failed to initialize GPIO trigger. Not using triggering on GPIO chip number "
+                      << gpio_chip_ << "line number " << gpio_line_ << ".");
     rclcpp::shutdown();
     return;
   }
 
   if (fps_ < 1.0) {
     RCLCPP_ERROR_STREAM(
-      get_logger(), "Unable to trigger slower than 1 fps. Not triggering on GPIO " << gpio_ << ".");
+      get_logger(), "Unable to trigger slower than 1 fps. Not using triggering on GPIO chip number "
+                      << gpio_chip_ << "line number " << gpio_line_ << ".");
     rclcpp::shutdown();
     return;
   }
 
   if (cpu_ < 0 || cpu_ >= static_cast<int>(std::thread::hardware_concurrency())) {
     RCLCPP_WARN_STREAM(
-      get_logger(), "Selected CPU core"
-                      << cpu_ << " is not available on this architecture. Not triggering on GPIO "
-                      << gpio_ << ".");
+      get_logger(),
+      "Selected CPU core"
+        << cpu_
+        << " is not available on this architecture. Not using triggering on GPIO chip number "
+        << gpio_chip_ << "line number " << gpio_line_ << ".");
   }
 
   // Set CPU affinity
@@ -166,6 +172,18 @@ void SensorTrigger::run()
       return;
     }
   }
+}
+
+bool SensorTrigger::get_gpio_chip_and_line()
+{
+  if (
+    gpio_mapping_[gpio_name_] && gpio_mapping_[gpio_name_]["chip"] &&
+    gpio_mapping_[gpio_name_]["line"]) {
+    gpio_chip_ = gpio_mapping_[gpio_name_]["chip"].as<unsigned int>(),
+    gpio_line_ = gpio_mapping_[gpio_name_]["line"].as<unsigned int>();
+    return true;
+  }
+  return false;
 }
 }  // namespace sensor_trigger
 

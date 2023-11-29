@@ -14,8 +14,9 @@
 
 #include <sensor_trigger/jetson_gpio.hpp>
 
-#include <cstdio>
 #include <sys/stat.h>
+
+#include <cstdio>
 
 namespace jetson_gpio
 {
@@ -32,13 +33,16 @@ JetsonGpio::~JetsonGpio()
   unexport_gpio();
 }
 
-bool JetsonGpio::init_gpio_pin(int gpio_pin, gpio_direction direction)
+bool JetsonGpio::init_gpio_pin(
+  unsigned int gpio_chip, unsigned int gpio_line, gpio_direction direction)
 {
+  std::string gpio_character_device = "/dev/gpiochip" + std::to_string(gpio_chip);
 
-  gpio_chip_ = gpiod::chip(GPIO_CHARACTER_DEVICE);
-  gpio_lines_ = gpio_chip_.get_lines(std::vector<unsigned int>({gpio_pin}));  // XXX: 143 = Anvil misc.I/O GP_Out_1, 108 = PWM_Out_0
+  gpio_chip_ = gpiod::chip(gpio_character_device);
+  gpio_lines_ = gpio_chip_.get_lines(
+    std::vector<unsigned int>({gpio_line}));  // XXX: 143 = Anvil misc.I/O GP_Out_1, 108 = PWM_Out_0
   gpio_request_ = {
-    "sensor_trigger", // consumer name. XXX: fixed name may conflict for multiple instances
+    "sensor_trigger",  // consumer name. XXX: fixed name may conflict for multiple instances
     gpiod::line_request::DIRECTION_OUTPUT,  // request_type
     0                                       // flag
   };
@@ -52,10 +56,7 @@ bool JetsonGpio::init_gpio_pin(int gpio_pin, gpio_direction direction)
   return true;
 }
 
-bool JetsonGpio::export_gpio()
-{
-  return true;
-}
+bool JetsonGpio::export_gpio() { return true; }
 
 bool JetsonGpio::unexport_gpio()
 {
@@ -80,7 +81,6 @@ bool JetsonGpio::set_gpio_direction(gpio_direction direction)
 
 bool JetsonGpio::set_gpio_pin_state(gpio_state state)
 {
-
   gpio_lines_.set_values(std::vector<int>({state}));
 
   return true;
