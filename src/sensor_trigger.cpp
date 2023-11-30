@@ -26,7 +26,8 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   gpio_name_ = declare_parameter("gpio_name", "roscube_trigger1");
   cpu_ = declare_parameter("cpu_core_id", 1);
   pulse_width_ms_ = declare_parameter("pulse_width_ms", 5);
-  std::string gpio_mapping_file = declare_parameter("gpio_mapping_file", "gpio_mapping.yaml");
+  std::string gpio_mapping_file =
+    declare_parameter("gpio_mapping_file", "config/gpio_mapping.yaml");
 
   gpio_mapping_ = YAML::LoadFile(gpio_mapping_file);
 

@@ -6,7 +6,7 @@
   <arg name="frame_rate" default="10.0"/>
   <arg name="cpu_core_id" default="1"/>
   <arg name="pulse_width_ms" default="5"/>
-  <arg name="gpio_mapping_file" default="gpio_mapping.yaml"/>
+  <arg name="gpio_mapping_file" default="config/gpio_mapping.yaml"/>
 
   <push-ros-namespace namespace="$(var namespace)"/>
   <node pkg="sensor_trigger" exec="sensor_trigger_exe" name="sensor_trigger">
@@ -15,6 +15,6 @@
     <param name="frame_rate" value="$(var frame_rate)"/>
     <param name="cpu_core_id" value="$(var cpu_core_id)"/>
     <param name="pulse_width_ms" value="$(var pulse_width_ms)"/>
-    <param name="gpio_mapping_file" value="$(var gpio_mapping)"/>
+    <param name="gpio_mapping_file" value="$(var gpio_mapping_file)"/>
   </node>
 </launch>
