@@ -25,6 +25,9 @@ ament_auto_add_library(${PROJECT_NAME} SHARED
 target_link_libraries(${PROJECT_NAME}
   ${GPIOD_LIBRARIES}
 )
+target_link_libraries(${PROJECT_NAME}
+  yaml-cpp
+)
 
 rclcpp_components_register_node(${PROJECT_NAME}
   PLUGIN "sensor_trigger::SensorTrigger"
