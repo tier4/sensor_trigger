@@ -30,7 +30,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
 
   gpio_mapping_ = YAML::LoadFile(gpio_mapping_file);
 
-  if (!get_gpio_chip_and_line) {
+  if (!get_gpio_chip_and_line()) {
     RCLCPP_ERROR_STREAM(
       get_logger(),
       "No valid trigger GPIO specified. Not using triggering on GPIO name " << gpio_name_ << ".");
