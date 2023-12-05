@@ -14,6 +14,7 @@
 
 #include <sensor_trigger/jetson_gpio.hpp>
 #include <sensor_trigger/sensor_trigger.hpp>
+#include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace sensor_trigger
 {
@@ -27,7 +28,7 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   cpu_ = declare_parameter("cpu_core_id", 1);
   pulse_width_ms_ = declare_parameter("pulse_width_ms", 5);
   std::string gpio_mapping_file =
-    declare_parameter("gpio_mapping_file", "config/gpio_mapping.yaml");
+    declare_parameter("gpio_mapping_file", ament_index_cpp::get_package_share_directory("sensor_trigger") + "/config/gpio_mapping.yaml");
 
   gpio_mapping_ = YAML::LoadFile(gpio_mapping_file);
 
