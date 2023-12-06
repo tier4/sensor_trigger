@@ -25,8 +25,8 @@
 
 #define SYSFS_GPIO_DIR "/sys/class/gpio"
 #define BUFFER_SIZE 64
-#define GPIO_OUTPUT 1
-#define GPIO_INPUT 0
+#define GPIO_OUTPUT gpiod::line_request::DIRECTION_OUTPUT
+#define GPIO_INPUT gpiod::line_request::DIRECTION_INPUT
 #define GPIO_HIGH 1
 #define GPIO_LOW 0
 
@@ -35,29 +35,22 @@ typedef int gpio_state;
 
 namespace jetson_gpio
 {
-// Mapping of GPIO number to pin number for ROSCubeX
-// Note: pin 5->216 is pin 5 on the DB50 connector, run by GPIO chip 216 (starting at GPIO number
-// 216)
-static std::map<int, int> pin_gpio_mapping{{5, 216}, {51, 408}, {52, 350}, {53, 446}, {54, 445}};
-
 class JetsonGpio
 {
 public:
-  JetsonGpio() : state_file_descriptor_(-1) {}
+  JetsonGpio();
   ~JetsonGpio();
   bool init_gpio_pin(unsigned int gpio_chip, unsigned int gpio_line, gpio_direction direction);
   bool set_gpio_pin_state(gpio_state state);
 
 protected:
-  bool export_gpio();
-  bool unexport_gpio();
+  bool close_gpio();
   bool set_gpio_direction(gpio_direction direction);
 
-  int state_file_descriptor_;
   int gpio_;
 
   gpiod::chip gpio_chip_;
-  gpiod::line_bulk gpio_lines_;
+  gpiod::line gpio_line_;
   gpiod::line_request gpio_request_;
 };
 }  // namespace jetson_gpio

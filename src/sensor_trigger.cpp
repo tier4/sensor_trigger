@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include <ament_index_cpp/get_package_share_directory.hpp>
 #include <sensor_trigger/jetson_gpio.hpp>
 #include <sensor_trigger/sensor_trigger.hpp>
-#include <ament_index_cpp/get_package_share_directory.hpp>
 
 namespace sensor_trigger
 {
@@ -27,8 +27,9 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
   gpio_name_ = declare_parameter("gpio_name", "roscube_trigger1");
   cpu_ = declare_parameter("cpu_core_id", 1);
   pulse_width_ms_ = declare_parameter("pulse_width_ms", 5);
-  std::string gpio_mapping_file =
-    declare_parameter("gpio_mapping_file", ament_index_cpp::get_package_share_directory("sensor_trigger") + "/config/gpio_mapping.yaml");
+  std::string gpio_mapping_file = declare_parameter(
+    "gpio_mapping_file",
+    ament_index_cpp::get_package_share_directory("sensor_trigger") + "/config/gpio_mapping.yaml");
 
   gpio_mapping_ = YAML::LoadFile(gpio_mapping_file);
 
@@ -136,14 +137,13 @@ void SensorTrigger::run()
         target_nsec = start_nsec;
         wait_nsec = 1e9 - now_nsec + start_nsec - 1e7;
       }
-      // Keep waiting for half the remaining time until the last millisecond.
+      // Keep waiting for half the remaining time until the last 10 milliseconds.
       // This is required as sleep_for tends to oversleep significantly
       if (wait_nsec > 1e7) {
         rclcpp::sleep_for(std::chrono::nanoseconds(wait_nsec / 2));
       }
     } while (wait_nsec > 1e7);
-    // std::lock_guard<std::mutex> guard(iomutex_);
-    // Block the last millisecond
+    // Block the last 10 milliseconds
     now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
     if (start_nsec == end_nsec) {
       while (now_nsec > 1e7) {
@@ -162,7 +162,8 @@ void SensorTrigger::run()
     bool to_high = gpio_handler_.set_gpio_pin_state(GPIO_HIGH);
     rclcpp::sleep_for(std::chrono::nanoseconds(pulse_width));
     rclcpp::Time now = rclcpp::Clock{RCL_SYSTEM_TIME}.now();
-    int64_t now_sec = now.nanoseconds() / 1e9;
+    int64_t now_sec =
+      (now.nanoseconds() - pulse_width) / 1e9;  // subtract pulse width to correct seconds value
     trigger_time_msg.sec = (int32_t)now_sec;
     trigger_time_msg.nanosec = (uint32_t)now_nsec;
     trigger_time_publisher_->publish(trigger_time_msg);

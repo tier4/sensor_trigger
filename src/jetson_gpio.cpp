@@ -22,15 +22,11 @@ namespace jetson_gpio
 {
 JetsonGpio::~JetsonGpio()
 {
-  if (state_file_descriptor_ > -1) {
-    close(state_file_descriptor_);
-  }
-
   // Regardless of the existence of other processes that uses the same GPIO pin
   // (incl. zombie GPIO port opening because of failure exit),
-  // this unexport closes the target GPIO pin anyway.
+  // this function closes the target GPIO pin anyway.
   // This behavior intends to make next try to use this GPIO pin success.
-  unexport_gpio();
+  close_gpio();
 }
 
 bool JetsonGpio::init_gpio_pin(
@@ -39,49 +35,28 @@ bool JetsonGpio::init_gpio_pin(
   std::string gpio_character_device = "/dev/gpiochip" + std::to_string(gpio_chip);
 
   gpio_chip_ = gpiod::chip(gpio_character_device);
-  gpio_lines_ = gpio_chip_.get_lines(
-    std::vector<unsigned int>({gpio_line}));  // XXX: 143 = Anvil misc.I/O GP_Out_1, 108 = PWM_Out_0
+  gpio_line_ = gpio_chip_.get_line(gpio_line);
   gpio_request_ = {
-    "sensor_trigger",  // consumer name. XXX: fixed name may conflict for multiple instances
-    gpiod::line_request::DIRECTION_OUTPUT,  // request_type
-    0                                       // flag
+    "sensor_trigger",  // consumer name
+    direction,         // request_type
+    0                  // flag
   };
 
-  if (!set_gpio_direction(direction)) {
-    return false;
-  }
-
-  gpio_lines_.request(gpio_request_, std::vector<int>({GPIO_LOW}));
+  gpio_line_.request(gpio_request_, GPIO_LOW);
 
   return true;
 }
 
-bool JetsonGpio::export_gpio() { return true; }
-
-bool JetsonGpio::unexport_gpio()
+bool JetsonGpio::close_gpio()
 {
   gpio_chip_.~chip();
 
   return true;
 }
 
-bool JetsonGpio::set_gpio_direction(gpio_direction direction)
-{
-  switch (direction) {
-    case GPIO_INPUT:
-      gpio_request_.request_type = gpiod::line_request::DIRECTION_INPUT;
-      break;
-    case GPIO_OUTPUT:
-      gpio_request_.request_type = gpiod::line_request::DIRECTION_OUTPUT;
-      break;
-  }
-
-  return true;
-}
-
 bool JetsonGpio::set_gpio_pin_state(gpio_state state)
 {
-  gpio_lines_.set_values(std::vector<int>({state}));
+  gpio_line_.set_value(state);
 
   return true;
 }
