@@ -14,7 +14,7 @@ This repository provides a ROS2 package for generating sensor trigger signals on
 
 ## Installation
 
-1.  Create or change into your workspace directory, and execute the following:
+1. Create or change into your workspace directory, and execute the following:
 
     ```bash
     mkdir -p src
@@ -22,7 +22,7 @@ This repository provides a ROS2 package for generating sensor trigger signals on
     colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to sensor_trigger
     ```
 
-2.  The sensor trigger node requires as close to real-time operation as possible to maintain reliable trigger timing under heavy CPU load. If this is required, it is recommended to allow thread schedule priority setting to the ROS2 user by adding the following line to `/etc/security/limits.conf`:
+2. The sensor trigger node requires as close to real-time operation as possible to maintain reliable trigger timing under heavy CPU load. If this is required, it is recommended to allow thread schedule priority setting to the ROS2 user by adding the following line to `/etc/security/limits.conf`:
 
     ```
     <username>    -   rtprio   98

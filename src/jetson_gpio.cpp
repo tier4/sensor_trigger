@@ -14,8 +14,9 @@
 
 #include <sensor_trigger/jetson_gpio.hpp>
 
-#include <cstdio>
 #include <sys/stat.h>
+
+#include <cstdio>
 
 namespace jetson_gpio
 {
@@ -68,11 +69,11 @@ bool JetsonGpio::export_gpio()
 
   // Check target GPIO is available (not opened) first.
   // If it is unavailable, close the port and try to open it.
-    std::string target_gpio = std::string(SYSFS_GPIO_DIR) + std::string("/gpio")
-                              + std::to_string(gpio_);
+  std::string target_gpio =
+    std::string(SYSFS_GPIO_DIR) + std::string("/gpio") + std::to_string(gpio_);
   struct stat return_status;
   if (stat(target_gpio.c_str(), &return_status) == 0) {
-       unexport_gpio();
+    unexport_gpio();
   }
 
   file_descriptor = open(SYSFS_GPIO_DIR "/export", O_WRONLY);
