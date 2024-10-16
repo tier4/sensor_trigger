@@ -1,21 +1,21 @@
 roscube_trigger1:
-  chip: 0
+  chip: 1
   line: 120
 roscube_trigger2:
-  chip: 0
+  chip: 1
   line: 62
 roscube_trigger3:
-  chip: 0
+  chip: 1
   line: 158
 roscube_trigger4:
-  chip: 0
+  chip: 1
   line: 157
 roscube_misc:
   chip: 3
   line: 0
 anvil_trigger:
-  chip: 0
+  chip: 1
   line: 108
 anvil_misc:
-  chip: 0
+  chip: 1
   line: 143
