@@ -16,23 +16,24 @@ This repository provides a ROS2 package for generating sensor trigger signals on
 
 1. Create or change into your workspace directory, and execute the following:
 
-    ```bash
-    mkdir -p src
-    git clone git@github.com:tier4/sensor_trigger.git src
-    colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to sensor_trigger
-    ```
+   ```bash
+   mkdir -p src
+   git clone git@github.com:tier4/sensor_trigger.git src
+   colcon build --symlink-install --cmake-args -DCMAKE_BUILD_TYPE=Release --packages-up-to sensor_trigger
+   ```
 
 2. The sensor trigger node requires as close to real-time operation as possible to maintain reliable trigger timing under heavy CPU load. If this is required, it is recommended to allow thread schedule priority setting to the ROS2 user by adding the following line to `/etc/security/limits.conf`:
 
-    ```
-    <username>    -   rtprio   98
-    ```
+   ```
+   <username>    -   rtprio   98
+   ```
 
-    After saving the edited file (as sudo), a reboot will be required.
+   After saving the edited file (as sudo), a reboot will be required.
 
-    Some notes about thread scheduling:
-    - If you do not make the settings in (2), the node will run but the timing thread will not be scheduled at any higher priority that other user threads and interruption may occur, resulting in high jitter in the trigger output.
-    - When running in a ROS2 docker, the settings in (2) are not required as the docker user is by default the root user.
+   Some notes about thread scheduling:
+
+   - If you do not make the settings in (2), the node will run but the timing thread will not be scheduled at any higher priority that other user threads and interruption may occur, resulting in high jitter in the trigger output.
+   - When running in a ROS2 docker, the settings in (2) are not required as the docker user is by default the root user.
 
 ## Usage
 
@@ -63,13 +64,13 @@ This node does not take any inputs.
 
 ### Core Parameters
 
-| Name          | Type   | Description                                                  |
-| ------------- | ------ | ------------------------------------------------------------ |
-| `gpio`        | int    | Output GPIO pin - see below for assigned pins on RQX-58G     |
-| `phase`       | double | Desired phase of the trigger relative to ToS (Top of Second) |
-| `frame_rate`  | double | Desired frequency of the trigger in Hz                       |
-| `cpu_core_id` | int    | Desired CPU core for execution\*                             |
-| `pulse_width_ms` | int | Desired pulse width (the time period in milliseconds for the GPIO pin to remain high) |
+| Name             | Type   | Description                                                                           |
+| ---------------- | ------ | ------------------------------------------------------------------------------------- |
+| `gpio`           | int    | Output GPIO pin - see below for assigned pins on RQX-58G                              |
+| `phase`          | double | Desired phase of the trigger relative to ToS (Top of Second)                          |
+| `frame_rate`     | double | Desired frequency of the trigger in Hz                                                |
+| `cpu_core_id`    | int    | Desired CPU core for execution\*                                                      |
+| `pulse_width_ms` | int    | Desired pulse width (the time period in milliseconds for the GPIO pin to remain high) |
 
 \*This is indexed from CPU core 0 (which will be CPU 1 in `htop`).
 
