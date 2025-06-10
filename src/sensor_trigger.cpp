@@ -65,29 +65,28 @@ SensorTrigger::SensorTrigger(const rclcpp::NodeOptions & node_options)
         << gpio_chip_ << "line number " << gpio_line_ << ".");
   }
 
-  // Set CPU affinity
-  cpu_set_t cpuset;
-  CPU_ZERO(&cpuset);
-  CPU_SET(cpu_, &cpuset);
-  if (pthread_setaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset)) {
-    RCLCPP_WARN_STREAM(get_logger(), "Failed to set CPU affinity: " << strerror(errno) << ".");
-  }
-  if (pthread_getaffinity_np(pthread_self(), sizeof(cpu_set_t), &cpuset)) {
-    RCLCPP_WARN_STREAM(get_logger(), "Failed to check CPU affinity: " << strerror(errno) << ".");
-  }
-
   // Create thread
   trigger_time_publisher_ = create_publisher<builtin_interfaces::msg::Time>("trigger_time", 1000);
   trigger_thread_ = std::make_unique<std::thread>(&SensorTrigger::run, this);
+
+  // Set CPU affinity for trigger_thread_
+  cpu_set_t cpuset;
+  CPU_ZERO(&cpuset);
+  CPU_SET(cpu_, &cpuset);
+  if (pthread_setaffinity_np(trigger_thread_->native_handle(), sizeof(cpu_set_t), &cpuset)) {
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to set thread CPU affinity: " << strerror(errno) << ".");
+  }
+  if (pthread_getaffinity_np(trigger_thread_->native_handle(), sizeof(cpu_set_t), &cpuset)) {
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to check thread CPU affinity: " << strerror(errno) << ".");
+  }
 
   // Set thread priority
   sched_param sch;
   int policy;
   pthread_getschedparam(trigger_thread_->native_handle(), &policy, &sch);
-  sch.sched_priority = 30;
+  sch.sched_priority = 80;
   if (pthread_setschedparam(trigger_thread_->native_handle(), SCHED_FIFO, &sch)) {
-    RCLCPP_WARN_STREAM(
-      get_logger(), "Failed to set schedule parameters: " << strerror(errno) << ".");
+    RCLCPP_WARN_STREAM(get_logger(), "Failed to set schedule parameters: " << strerror(errno) << ".");
   }
 }
 
