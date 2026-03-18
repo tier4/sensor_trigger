@@ -136,14 +136,13 @@ void SensorTrigger::run()
         target_nsec = start_nsec;
         wait_nsec = 1e9 - now_nsec + start_nsec - 1e7;
       }
-      // Keep waiting for half the remaining time until the last millisecond.
+      // Keep waiting for half the remaining time until the last 10 milliseconds.
       // This is required as sleep_for tends to oversleep significantly
       if (wait_nsec > 1e7) {
         rclcpp::sleep_for(std::chrono::nanoseconds(wait_nsec / 2));
       }
     } while (wait_nsec > 1e7);
-    // std::lock_guard<std::mutex> guard(iomutex_);
-    // Block the last millisecond
+    // Block the last 10 milliseconds
     now_nsec = rclcpp::Clock{RCL_SYSTEM_TIME}.now().nanoseconds() % (uint64_t)1e9;
     if (start_nsec == end_nsec) {
       while (now_nsec > 1e7) {
