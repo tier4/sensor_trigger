@@ -32,11 +32,11 @@ jobs:
       - name: setup directories
         run: mkdir -p ros_ws/src
       - name: checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v2.8.0
         with:
           path: ros_ws/src
       - name: build and test
-        uses: ros-tooling/action-ros-ci@v0.3
+        uses: ros-tooling/action-ros-ci@0.3.16
         with:
           package-name: sensor_trigger
           target-ros2-distro: ${{ matrix.ros_distribution }}
